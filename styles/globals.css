@@ -22,7 +22,10 @@
 html {
   scroll-behavior: smooth;
   font-family: var(--font-family);
-  background: var(--clr-background);
+  background: url("/images/meshAwesome.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 ::selection {
