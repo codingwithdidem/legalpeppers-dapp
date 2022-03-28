@@ -1,16 +1,31 @@
-html,
-body {
-  padding: 0;
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --clr-pink: #e86a92;
+  --clr-black: #2b2d42;
+  --clr-yellow: #f7e733;
+  --clr-green: #00b894;
+  --clr-white: #f7f7f9;
+  --clr-selection-bg: #f7f7f9;
+  --clr-selection-text: #2b2d42;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+@font-face {
+  font-family: "Chalkboard";
+  src: local("Chalkboard"), url(/fonts/Chalkboard.ttc) format("ttc");
 }
 
-* {
-  box-sizing: border-box;
+html {
+  scroll-behavior: smooth;
+  font-family: var(--font-family);
+  background: var(--clr-background);
+}
+
+::selection {
+  background: var(--clr-selection-bg);
+  color: var(--clr-selection-text);
 }
