@@ -9,19 +9,16 @@ export default function Mint() {
   const [{ chains, connectedChain, settingChain }, setChain] = useSetChain();
   const connectedWallets = useWallets();
 
-  const [effect, setEffect] = useState(false);
   const [maxSupply, setMaxSupply] = useState(0);
   const [totalMinted, setTotalMinted] = useState(0);
-  const [maxMintAmount, setMaxMintAmount] = useState(0);
+  const [maxMintAmount, setMaxMintAmount] = useState(10);
   const [paused, setPaused] = useState(false);
-  const [isPublicSale, setIsPublicSale] = useState(false);
   const [isPreSale, setIsPreSale] = useState(false);
 
   const [status, setStatus] = useState(null);
   const [mintAmount, setMintAmount] = useState(1);
   const [isMinting, setIsMinting] = useState(false);
   const [onboard, setOnboard] = useState(null);
-  const [walletAddress, setWalletAddress] = useState("");
 
   useEffect(() => {
     setOnboard(initOnboard);
@@ -92,15 +89,17 @@ export default function Mint() {
 
   return (
     <div className="min-h-screen h-full w-full overflow-hidden flex flex-col items-center justify-center">
-      <div className=" relative w-full h-full flex flex-col items-center justify-center">
+      <div className=" relative w-[1200px]  h-full flex flex-col items-center justify-center">
         <div className="flex flex-col items-center justify-center h-full w-full px-2 md:px-10">
           <div className=" shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
             <h1 className="font-chalk uppercase font-bold text-3xl md:text-4xl bg-gradient-to-br  from-brand-white to-brand-green bg-clip-text text-transparent mt-3">
               {paused ? "Paused" : isPreSale ? "Pre-Sale" : "Public Sale"}
             </h1>
-            <h3 className="text-sm text-pink-200 tracking-widest">
-              {walletAddress
-                ? walletAddress.slice(0, 8) + "..." + walletAddress.slice(-4)
+            <h3 className=" font-sans text-sm text-pink-200 tracking-widest">
+              {wallet?.accounts[0]?.address
+                ? wallet?.accounts[0]?.address.slice(0, 8) +
+                  "..." +
+                  wallet?.accounts[0]?.address.slice(-4)
                 : ""}
             </h3>
 
@@ -148,8 +147,6 @@ export default function Mint() {
                   <button
                     className={` shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none hover:bg-brand-pink-light  w-10 h-10 md:w-14 md:h-12 flex items-center  justify-center text-brand-background transition duration-100 ease-in-out font-chalk bg-brand-pink border-2 border-[rgba(0,0,0,1)] font-bold rounded-md`}
                     onClick={decrementMintAmount}
-                    onMouseDown={() => setEffect(true)}
-                    onMouseUp={() => setEffect(false)}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -189,13 +186,11 @@ export default function Mint() {
                 </div>
 
                 {/* Mint Button && Connect Wallet Button */}
-                {walletAddress ? (
+                {wallet?.accounts[0]?.address ? (
                   <button
                     className={` ${
-                      paused || isMinting
-                        ? "bg-gray-900 cursor-not-allowed"
-                        : "bg-gradient-to-br from-brand-purple to-brand-pink shadow-lg hover:shadow-pink-400/50"
-                    } font-chalk mt-12 w-full px-6 py-3 rounded-md text-2xl text-white  mx-4 tracking-wide uppercase`}
+                      (paused || isMinting) && "bg-gray-900 cursor-not-allowed"
+                    } w-full transition duration-300 ease-in-out font-chalk mt-12 bg-brand-pink hover:bg-brand-pink-light border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase`}
                     disabled={paused || isMinting}
                     onClick={isPreSale ? presaleMintHandler : publicMintHandler}
                   >
