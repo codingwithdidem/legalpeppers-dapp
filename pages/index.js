@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 import { initOnboard } from "../utils/onboard";
 import { useConnectWallet, useSetChain, useWallets } from "@web3-onboard/react";
 import { config } from "../dapp.config";
@@ -8,6 +9,7 @@ export default function Mint() {
   const [{ chains, connectedChain, settingChain }, setChain] = useSetChain();
   const connectedWallets = useWallets();
 
+  const [effect, setEffect] = useState(false);
   const [maxSupply, setMaxSupply] = useState(0);
   const [totalMinted, setTotalMinted] = useState(0);
   const [maxMintAmount, setMaxMintAmount] = useState(0);
@@ -51,6 +53,7 @@ export default function Mint() {
   }, [onboard, connect]);
 
   const incrementMintAmount = () => {
+    console.log("hello");
     if (mintAmount < maxMintAmount) {
       setMintAmount(mintAmount + 1);
     }
@@ -89,9 +92,9 @@ export default function Mint() {
 
   return (
     <div className="min-h-screen h-full w-full overflow-hidden flex flex-col items-center justify-center">
-      <div className="relative w-full h-full flex flex-col items-center justify-center">
+      <div className=" relative w-full h-full flex flex-col items-center justify-center">
         <div className="flex flex-col items-center justify-center h-full w-full px-2 md:px-10">
-          <div className="z-1 md:max-w-3xl w-full bg-gray-900/90 filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
+          <div className=" shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
             <h1 className="font-chalk uppercase font-bold text-3xl md:text-4xl bg-gradient-to-br  from-brand-white to-brand-green bg-clip-text text-transparent mt-3">
               {paused ? "Paused" : isPreSale ? "Pre-Sale" : "Public Sale"}
             </h1>
@@ -119,12 +122,12 @@ export default function Mint() {
               <div className="flex flex-col items-center w-full px-4 mt-16 md:mt-0">
                 <div className="font-chalk flex items-center justify-between w-full">
                   <button
-                    className="w-14 h-10 md:w-16 md:h-12 flex items-center justify-center text-brand-background hover:shadow-lg bg-gray-300 font-bold rounded-md"
+                    className={`shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none hover:bg-brand-pink-light w-10 h-10 md:w-14 md:h-12 flex items-center  justify-center text-brand-background transition duration-100 ease-in-out font-chalk bg-brand-pink border-2 border-[rgba(0,0,0,1)] font-bold rounded-md`}
                     onClick={incrementMintAmount}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 md:h-8 md:w-8"
+                      className="h-6 w-6 md:h-8 md:w-8 text-gray-100"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -143,12 +146,14 @@ export default function Mint() {
                   </p>
 
                   <button
-                    className="w-14 h-10 md:w-16 md:h-12 flex items-center justify-center text-brand-background hover:shadow-lg bg-gray-300 font-bold rounded-md"
+                    className={` shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none hover:bg-brand-pink-light  w-10 h-10 md:w-14 md:h-12 flex items-center  justify-center text-brand-background transition duration-100 ease-in-out font-chalk bg-brand-pink border-2 border-[rgba(0,0,0,1)] font-bold rounded-md`}
                     onClick={decrementMintAmount}
+                    onMouseDown={() => setEffect(true)}
+                    onMouseUp={() => setEffect(false)}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 md:h-8 md:w-8"
+                      className="h-6 w-6 md:h-8 md:w-8 text-gray-100"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -198,7 +203,7 @@ export default function Mint() {
                   </button>
                 ) : (
                   <button
-                    className="font-chalk mt-12 w-full bg-brand-pink border-2 border-gray-800 shadow-[0_3px_0px_0px_rgba(0,0,0,1)] px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase"
+                    className="transition duration-300 ease-in-out font-chalk mt-12 w-full bg-brand-pink hover:bg-brand-pink-light border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase"
                     onClick={() => connect()}
                   >
                     Connect Wallet
@@ -222,14 +227,14 @@ export default function Mint() {
 
             {/* Contract Address */}
             <div className="border-t border-gray-800 flex flex-col items-center mt-10 py-2 w-full">
-              <h3 className="font-chalk text-2xl text-brand-pink uppercase mt-6">
+              <h3 className=" font-chalk text-2xl text-brand-green uppercase mt-6">
                 Contract Address
               </h3>
               <a
                 href={`https://rinkeby.etherscan.io/address/${config.contractAddress}#readContract`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 mt-4"
+                className="text-gray-300 mt-4"
               >
                 <span className="break-all ...">{config.contractAddress}</span>
               </a>

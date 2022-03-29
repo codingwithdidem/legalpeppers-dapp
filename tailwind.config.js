@@ -13,6 +13,7 @@ module.exports = {
       },
       colors: {
         "brand-pink": "var(--clr-pink)",
+        "brand-pink-light": "var(--clr-pink-light)",
         "brand-yellow": "var(--clr-yellow)",
         "brand-green": "var(--clr-green)",
         "brand-white": "var(--clr-white)",

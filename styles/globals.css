@@ -6,6 +6,7 @@
 
 :root {
   --clr-pink: #e86a92;
+  --clr-pink-light: #ed83a5;
   --clr-black: #2b2d42;
   --clr-yellow: #f7e733;
   --clr-green: #00b894;
@@ -22,13 +23,23 @@
 html {
   scroll-behavior: smooth;
   font-family: var(--font-family);
-  background: url("/images/meshAwesome.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+  background: linear-gradient(
+    to bottom,
+    var(--clr-black) 26%,
+    var(--clr-pink-light) 100%
+  );
 }
 
 ::selection {
   background: var(--clr-selection-bg);
   color: var(--clr-selection-text);
+}
+
+#tsparticles {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: 0;
 }
