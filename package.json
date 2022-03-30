@@ -12,6 +12,7 @@
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/contracts": "^4.5.0",
     "@web3-onboard/core": "^2.0.11",
     "@web3-onboard/injected-wallets": "^2.0.2",
     "@web3-onboard/react": "^2.0.5",
@@ -37,7 +38,8 @@
     "solidity-coverage": "^0.7.20",
     "tsparticles": "^1.42.4",
     "tsparticles-preset-stars": "^1.42.4",
-    "tsparticles-shape-confetti": "^1.14.2"
+    "tsparticles-shape-confetti": "^1.14.2",
+    "web3": "^1.7.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.4",

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useConnectWallet, useSetChain, useWallets } from "@web3-onboard/react";
 
 import { initOnboard } from "../utils/onboard";
-import { useConnectWallet, useSetChain, useWallets } from "@web3-onboard/react";
 import { config } from "../dapp.config";
+import { getSaleStatus, onSaleStatusChange } from "../utils/interact";
 
 export default function Mint() {
   const [{ wallet }, connect, disconnect] = useConnectWallet();
@@ -16,9 +17,19 @@ export default function Mint() {
   const [isPreSale, setIsPreSale] = useState(false);
 
   const [status, setStatus] = useState(null);
+  const [saleStatus, setSaleStatus] = useState(null);
   const [mintAmount, setMintAmount] = useState(1);
   const [isMinting, setIsMinting] = useState(false);
   const [onboard, setOnboard] = useState(null);
+
+  useEffect(() => {
+    const init = async () => {
+      setSaleStatus(await getSaleStatus());
+      onSaleStatusChange();
+    };
+
+    init();
+  }, []);
 
   useEffect(() => {
     setOnboard(initOnboard);
@@ -89,11 +100,11 @@ export default function Mint() {
 
   return (
     <div className="min-h-screen h-full w-full overflow-hidden flex flex-col items-center justify-center">
-      <div className=" relative w-[1200px]  h-full flex flex-col items-center justify-center">
-        <div className="flex flex-col items-center justify-center h-full w-full px-2 md:px-10">
+      <div className="relative w-full md:w-[800px] h-full flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center justify-center h-full w-full px-2 py-2">
           <div className=" shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
             <h1 className="font-chalk uppercase font-bold text-3xl md:text-4xl bg-gradient-to-br  from-brand-white to-brand-green bg-clip-text text-transparent mt-3">
-              {paused ? "Paused" : isPreSale ? "Pre-Sale" : "Public Sale"}
+              {saleStatus}
             </h1>
             <h3 className=" font-sans text-sm text-pink-200 tracking-widest">
               {wallet?.accounts[0]?.address
