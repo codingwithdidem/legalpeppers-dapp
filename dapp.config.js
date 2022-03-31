@@ -1,10 +1,10 @@
 const config = {
-  title: "BoredApe Dapp",
+  title: "Legal Peppers Club Dapp",
   description: "A showcase dapp which is built for you to create your own",
-  contractAddress: "0x0312e42e4b55823a3C41769DC0B07F382dECc247",
+  contractAddress: "0xe23f887c5c1C7a2F7Ecb8945241479Bb55C39da1",
   maxMintAmount: 10,
   presaleMaxMintAmount: 3,
-  price: 0.01,
+  price: 0.033,
 };
 
 export { config };

@@ -3,29 +3,35 @@ import { useConnectWallet, useSetChain, useWallets } from "@web3-onboard/react";
 
 import { initOnboard } from "../utils/onboard";
 import { config } from "../dapp.config";
-import { getSaleStatus, onSaleStatusChange } from "../utils/interact";
+import { pickStatusTitle } from "../utils/helpers";
+import {
+  peppersContract,
+  getSaleStatus,
+  publicMint,
+  presaleMint,
+} from "../utils/interact";
 
 export default function Mint() {
   const [{ wallet }, connect, disconnect] = useConnectWallet();
   const [{ chains, connectedChain, settingChain }, setChain] = useSetChain();
   const connectedWallets = useWallets();
 
+  const [onboard, setOnboard] = useState(null);
+  const [saleStatus, setSaleStatus] = useState(null);
   const [maxSupply, setMaxSupply] = useState(0);
   const [totalMinted, setTotalMinted] = useState(0);
   const [maxMintAmount, setMaxMintAmount] = useState(10);
-  const [paused, setPaused] = useState(false);
-  const [isPreSale, setIsPreSale] = useState(false);
-
-  const [status, setStatus] = useState(null);
-  const [saleStatus, setSaleStatus] = useState(null);
   const [mintAmount, setMintAmount] = useState(1);
+  const [status, setStatus] = useState(null);
   const [isMinting, setIsMinting] = useState(false);
-  const [onboard, setOnboard] = useState(null);
 
   useEffect(() => {
     const init = async () => {
       setSaleStatus(await getSaleStatus());
-      onSaleStatusChange();
+
+      // Event Listeners
+      addSaleStatusListener();
+      addMintListener();
     };
 
     init();
@@ -61,7 +67,6 @@ export default function Mint() {
   }, [onboard, connect]);
 
   const incrementMintAmount = () => {
-    console.log("hello");
     if (mintAmount < maxMintAmount) {
       setMintAmount(mintAmount + 1);
     }
@@ -85,18 +90,82 @@ export default function Mint() {
 
     setIsMinting(false);
   };
-  const publicMintHandler = async () => {
+
+  const publicMintHandler = () => {
     setIsMinting(true);
 
-    const { success, status } = await publicMint(mintAmount);
+    publicMint(mintAmount)
+      .on("transactionHash", (txHash) => {
+        setStatus({
+          success: true,
+          message: (
+            <a
+              href={`https://rinkeby.etherscan.io/tx/${txHash}`}
+              target="_blank"
+            >
+              Minting {mintAmount} LPCs... Click to check out your transaction
+              on Etherscan
+            </a>
+          ),
+        });
 
-    setStatus({
-      success,
-      message: status,
-    });
-
-    setIsMinting(false);
+        setIsMinting(false);
+      })
+      .on("error", (error) => {
+        setStatus({
+          success: false,
+          message: error.message,
+        });
+        setIsMinting(false);
+      });
   };
+
+  const addSaleStatusListener = () => {
+    peppersContract.events.StatusChanged({}, (err, event) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+
+      const newStatus = event.returnValues.status;
+      setSaleStatus(newStatus);
+
+      console.log(`Status changed to ${pickStatusTitle(newStatus)}`);
+    });
+  };
+
+  const addMintListener = () => {
+    peppersContract.events.Transfer(
+      {
+        filter: {
+          _to: window.ethereum.selectedAddress,
+        },
+      },
+      (err, event) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+
+        const { tokenId } = event.returnValues;
+
+        console.log(event.returnValues);
+
+        setStatus({
+          success: true,
+          message: (
+            <a
+              href={`https://testnets.opensea.io/assets/${config.contractAddress}/${tokenId}`}
+            >
+              Minted {mintAmount} LPCs! Click to see your LPCs.
+            </a>
+          ),
+        });
+      }
+    );
+  };
+
+  const isSalePaused = pickStatusTitle(saleStatus) === "Pending";
 
   return (
     <div className="min-h-screen h-full w-full overflow-hidden flex flex-col items-center justify-center">
@@ -104,7 +173,7 @@ export default function Mint() {
         <div className="flex flex-col items-center justify-center h-full w-full px-2 py-2">
           <div className=" shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
             <h1 className="font-chalk uppercase font-bold text-3xl md:text-4xl bg-gradient-to-br  from-brand-white to-brand-green bg-clip-text text-transparent mt-3">
-              {saleStatus}
+              {pickStatusTitle(saleStatus)}
             </h1>
             <h3 className=" font-sans text-sm text-pink-200 tracking-widest">
               {wallet?.accounts[0]?.address
@@ -187,7 +256,7 @@ export default function Mint() {
                     <div className="flex items-center space-x-3">
                       <p>
                         {Number.parseFloat(config.price * mintAmount).toFixed(
-                          2
+                          3
                         )}{" "}
                         ETH
                       </p>{" "}
@@ -200,12 +269,22 @@ export default function Mint() {
                 {wallet?.accounts[0]?.address ? (
                   <button
                     className={` ${
-                      (paused || isMinting) && "bg-gray-900 cursor-not-allowed"
-                    } w-full transition duration-300 ease-in-out font-chalk mt-12 bg-brand-pink hover:bg-brand-pink-light border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase`}
-                    disabled={paused || isMinting}
-                    onClick={isPreSale ? presaleMintHandler : publicMintHandler}
+                      isSalePaused || isMinting
+                        ? "bg-gray-900 cursor-not-allowed"
+                        : "bg-brand-pink hover:bg-brand-pink-light"
+                    } w-full transition duration-300 ease-in-out font-chalk mt-12  border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase`}
+                    disabled={isSalePaused || isMinting}
+                    onClick={
+                      pickStatusTitle(saleStatus) === "Pre Sale"
+                        ? presaleMintHandler
+                        : publicMintHandler
+                    }
                   >
-                    {isMinting ? "Minting..." : "Mint"}
+                    {isSalePaused
+                      ? "Sale is not active"
+                      : isMinting
+                      ? "Minting..."
+                      : "Mint"}
                   </button>
                 ) : (
                   <button
