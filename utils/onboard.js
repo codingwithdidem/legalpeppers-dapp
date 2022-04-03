@@ -1,13 +1,17 @@
 import Onboard from "@web3-onboard/core";
 import { init } from "@web3-onboard/react";
+import walletLinkModule from "@web3-onboard/walletlink";
+import walletConnectModule from "@web3-onboard/walletconnect";
 import injectedModule from "@web3-onboard/injected-wallets";
 
 const RINKEBY_RPC_URL = `https://rinkeby.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`;
 
 const injected = injectedModule();
+const walletLink = walletLinkModule();
+const walletConnect = walletConnectModule();
 
 const initOnboard = init({
-  wallets: [injected],
+  wallets: [injected, walletLink, walletConnect],
   chains: [
     {
       id: "0x4",

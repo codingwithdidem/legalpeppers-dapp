@@ -1,7 +1,7 @@
 import Web3 from "web3";
 const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
-const whitelist = require("./whitelist.js");
+import whitelist from "./whitelist";
 
 const web3 = new Web3(
   Web3.givenProvider ||
@@ -17,6 +17,8 @@ export const getSaleStatus = async () => {
   const status = await peppersContract.methods.status().call();
   return status;
 };
+
+// Mint Functions
 
 export const publicMint = (amount) => {
   if (!window.ethereum.selectedAddress) {
@@ -39,6 +41,11 @@ export const presaleMint = async (amount) => {
     };
   }
 
+  // Calculate merkle root from the whitelist array
+  const leafNodes = whitelist.map((addr) => keccak256(addr));
+  const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
+  const root = merkleTree.getRoot();
+
   const leaf = keccak256(window.ethereum.selectedAddress);
   const proof = merkleTree.getHexProof(leaf);
 
@@ -52,8 +59,8 @@ export const presaleMint = async (amount) => {
     };
   }
 
-  const tx = await peppersContract.methods.mintPresale(amount).send({
-    from: web3.eth.defaultAccount,
+  return peppersContract.methods.presaleMint(amount, proof).send({
+    from: window.ethereum.selectedAddress,
+    value: web3.utils.toWei(String(0.033 * amount), "ether"),
   });
-  return tx;
 };

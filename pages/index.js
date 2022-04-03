@@ -60,7 +60,9 @@ export default function Mint() {
 
     if (previouslyConnectedWallets?.length) {
       async function setWalletFromLocalStorage() {
-        await connect({ autoSelect: previouslyConnectedWallets[0] });
+        await connect({
+          autoSelect: previouslyConnectedWallets[0],
+        });
       }
       setWalletFromLocalStorage();
     }
@@ -78,17 +80,33 @@ export default function Mint() {
     }
   };
 
-  const presaleMintHandler = async () => {
+  const presaleMintHandler = () => {
     setIsMinting(true);
 
-    const { success, status } = await presaleMint(mintAmount);
+    presaleMint(mintAmount)
+      .on("transactionHash", (txHash) => {
+        setStatus({
+          success: true,
+          message: (
+            <a
+              href={`https://rinkeby.etherscan.io/tx/${txHash}`}
+              target="_blank"
+            >
+              Minting {mintAmount} LPCs... Click to check out your transaction
+              on Etherscan
+            </a>
+          ),
+        });
 
-    setStatus({
-      success,
-      message: status,
-    });
-
-    setIsMinting(false);
+        setIsMinting(false);
+      })
+      .on("error", (error) => {
+        setStatus({
+          success: false,
+          message: error.message,
+        });
+        setIsMinting(false);
+      });
   };
 
   const publicMintHandler = () => {
@@ -155,7 +173,9 @@ export default function Mint() {
           success: true,
           message: (
             <a
-              href={`https://testnets.opensea.io/assets/${config.contractAddress}/${tokenId}`}
+              href={`https://rinkeby.rarible.com/token/${config.contractAddress}:${tokenId}?tab=details`}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Minted {mintAmount} LPCs! Click to see your LPCs.
             </a>
@@ -311,7 +331,7 @@ export default function Mint() {
             )}
 
             {/* Contract Address */}
-            <div className="border-t border-gray-800 flex flex-col items-center mt-10 py-2 w-full">
+            <div className="flex flex-col items-center mt-10 py-2 w-full">
               <h3 className=" font-chalk text-2xl text-brand-green uppercase mt-6">
                 Contract Address
               </h3>

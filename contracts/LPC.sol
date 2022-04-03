@@ -72,9 +72,10 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
         "ipfs://QmYUuwLoiRb8woXwJCCsr1gvbr8E21KuxRtmVBmnH1tZz7/hidden.json";
     bool public revealed = false;
     bytes32 public root;
-
+    uint256 public tokensReserved;
     uint256 public immutable maxSupply = 6666;
-    uint256 public immutable reservedSize = 10;
+    uint256 public immutable reserveAmount = 30;
+    uint256 public immutable maxPresaleMint = 12;
     uint256 public constant PRICE = 0.033 ether;
 
     event Minted(address minter, uint256 amount);
@@ -82,42 +83,58 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
     event RootChanged(bytes32 root);
     event ReservedToken(address minter, address recipient, uint256 amount);
 
-    mapping(address => uint256) public addressMintBalance;
-
-    uint256[] private _teamShares = [60, 35, 5]; // 3 PEOPLE IN THE TEAM
-    address[] private _team = [
-        0x933572D5F83B00A998102b7bf1a99c0f197E685B, // Admin Account gets 25% of the total revenue
-        0x82de9CE4a49fFeC4C41Cf733126F618eD83a879C, // Test Account gets 35% of the total revenue
-        0x8a7aC9834e2D4487Da22Dc130C97Ee8fBDc85568 // VIP Account gets 40% of the total revenue
-    ];
+    mapping(address => uint256) public addressToMintCount;
 
     modifier callerIsUser() {
         require(tx.origin == msg.sender, "The caller is another contract");
         _;
     }
 
-    constructor()
-        ERC721A("LegalPeppersClub", "LPC", 10)
-        PaymentSplitter(_team, _teamShares)
-    {}
-
-    // ===== Dev mint =====
-    function devMint(uint256 _amount) external callerIsUser onlyOwner {
-        require(
-            _amount <= reservedSize,
-            "Minting amount exceeds reserved size"
-        );
-        require((totalSupply() + _amount) <= maxSupply, "Sold out!");
-        require(
-            _amount % maxBatchSize == 0,
-            "Can only mint a multiple of the maxBatchSize"
-        );
-        uint256 numChunks = _amount / maxBatchSize;
-        for (uint256 i = 0; i < numChunks; i++) {
-            _safeMint(msg.sender, maxBatchSize);
-        }
+    constructor(
+        address[] memory _payees,
+        uint256[] memory _shares,
+        bytes32 _merkleroot
+    ) ERC721A("LegalPeppersClub", "LPC", 15) PaymentSplitter(_payees, _shares) {
+        root = _merkleroot;
+        status = Status.Pending;
     }
 
+    /**
+     * @dev Reserve some LPCs for the given address.
+     * @param _recipient The address to which the token is minted.
+     * @param _amount The amount of tokens to mint.
+     */
+    function reserveLPCs(address _recipient, uint256 _amount)
+        external
+        callerIsUser
+        onlyOwner
+    {
+        require(_recipient != address(0), "Zero address");
+        require((totalSupply() + _amount) <= maxSupply, "Sold out!");
+        require(
+            tokensReserved + _amount <= reserveAmount,
+            "Max reserve amount exceeded"
+        );
+
+        uint256 numChunks = _amount / maxBatchSize;
+        for (uint256 i = 0; i < numChunks; i++) {
+            _safeMint(_recipient, maxBatchSize);
+        }
+
+        uint256 remainder = _amount % maxBatchSize;
+        if (remainder > 0) {
+            _safeMint(_recipient, remainder);
+        }
+
+        tokensReserved += _amount;
+        emit ReservedToken(msg.sender, _recipient, _amount);
+    }
+
+    /**
+     * @dev Presale mints the given amount of LPCs to the msg.sender.
+     * @param _amount The amount of tokens to mint.
+     * @param _proof The merkle proof that is used to verify the minter is whitelisted.
+     */
     function presaleMint(uint256 _amount, bytes32[] calldata _proof)
         external
         payable
@@ -136,16 +153,17 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
             "Invalid proof."
         );
         require(
-            addressMintBalance[msg.sender] + _amount <= 10,
+            addressToMintCount[msg.sender] + _amount <= maxPresaleMint,
             "Too many tokens"
         );
 
         require(
-            totalSupply() + _amount + reservedSize <= maxSupply,
+            totalSupply() + _amount + reserveAmount - tokensReserved <=
+                maxSupply,
             "Max supply exceeded."
         );
 
-        addressMintBalance[msg.sender] += _amount;
+        addressToMintCount[msg.sender] += _amount;
 
         _safeMint(msg.sender, _amount);
         refundIfOver(PRICE * _amount);
@@ -153,11 +171,16 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
         emit Minted(msg.sender, _amount);
     }
 
+    /**
+     * @dev Mints the given amount of LPCs to the msg.sender.
+     * @param _amount The amount of tokens to mint.
+     */
     function mint(uint256 _amount) external payable callerIsUser nonReentrant {
         require(status == Status.PublicSale, "Public sale is not active.");
         require(_amount <= maxBatchSize, "Max mint amount per tx exceeded.");
         require(
-            totalSupply() + _amount + reservedSize <= maxSupply,
+            totalSupply() + _amount + reserveAmount - tokensReserved <=
+                maxSupply,
             "Max supply exceeded."
         );
 
@@ -172,10 +195,10 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
         emit StatusChanged(_status);
     }
 
-    function refundIfOver(uint256 price) private {
-        require(msg.value >= price, "Need to send more ETH.");
-        if (msg.value > price) {
-            payable(msg.sender).transfer(msg.value - price);
+    function refundIfOver(uint256 _price) private {
+        require(msg.value >= _price, "Need to send more ETH.");
+        if (msg.value > _price) {
+            payable(msg.sender).transfer(msg.value - _price);
         }
     }
 
