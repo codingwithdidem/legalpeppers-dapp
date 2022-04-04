@@ -55,7 +55,12 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
+contract LegalPeppersClub is
+    ERC721A,
+    Ownable,
+    ReentrancyGuard,
+    PaymentSplitter
+{
     using Address for address;
     using MerkleProof for bytes32[];
 
@@ -85,16 +90,32 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
 
     mapping(address => uint256) public addressToMintCount;
 
+    /*
+     * @dev Modifier to prevent phishing attacks.
+     * Refer to https://davidkathoh.medium.com/tx-origin-vs-msg-sender-93db7f234cb9 for more details.
+     */
     modifier callerIsUser() {
         require(tx.origin == msg.sender, "The caller is another contract");
         _;
     }
 
+    /*
+     * @dev Constructor for the contract.
+     * @param _payees The addresses that will receive the funds.
+     * @param _shares The shares that each payee will receive.
+     * @param _merkleroot The root of the merkle tree.
+     * @param _maxBatchSize refers to how much a minter can mint at a time.
+     */
+
     constructor(
         address[] memory _payees,
         uint256[] memory _shares,
-        bytes32 _merkleroot
-    ) ERC721A("LegalPeppersClub", "LPC", 15) PaymentSplitter(_payees, _shares) {
+        bytes32 _merkleroot,
+        uint256 _maxBatchSize
+    )
+        ERC721A("LegalPeppersClub", "LPC", _maxBatchSize)
+        PaymentSplitter(_payees, _shares)
+    {
         root = _merkleroot;
         status = Status.Pending;
     }
@@ -190,11 +211,20 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
         emit Minted(msg.sender, _amount);
     }
 
+    /**
+     * @dev Sets the status of the contract.
+     * Check Status enum for possible values.
+     * @param _status The status of the minting.
+     */
     function setStatus(Status _status) external onlyOwner {
         status = _status;
         emit StatusChanged(_status);
     }
 
+    /**
+     * @dev Refunds the sender if the amount sent is greater than required.
+     * @param _price The price minter sends to the contract.
+     */
     function refundIfOver(uint256 _price) private {
         require(msg.value >= _price, "Need to send more ETH.");
         if (msg.value > _price) {
@@ -202,10 +232,18 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
         }
     }
 
+    /**
+     * @dev Sets the base URI of the contract.
+     * @param _baseURI The base URI of the contract.
+     */
     function setBaseURI(string memory _baseURI) external onlyOwner {
         baseURI = _baseURI;
     }
 
+    /**
+     * @dev Sets the not revealed URI of the contract.
+     * @param _notRevealedURI The not revealed URI of the contract.
+     */
     function setNotRevealedURI(string memory _notRevealedURI)
         external
         onlyOwner
@@ -213,15 +251,28 @@ contract LPC is ERC721A, Ownable, ReentrancyGuard, PaymentSplitter {
         notRevealedURI = _notRevealedURI;
     }
 
+    /**
+     * @dev Sets revealed to true.
+     * This action cannot be reverted. Once the contract is revealed, it cannot be unrevealed.
+     */
     function reveal() external onlyOwner {
         revealed = true;
     }
 
+    /**
+     * @dev Sets the whitelist merkle root. Anytime the whitelist changes, this root must be updated.
+     * @param _root The root of the merkle tree.
+     */
     function setMerkleRoot(bytes32 _root) external onlyOwner {
         root = _root;
         emit RootChanged(root);
     }
 
+    /**
+     * @dev If the contract is not revealed, returns the not revealed URI.
+     * Otherwise, returns the tokenURI of the token with tokenID.
+     * @return The tokenURI of the token with tokenID.
+     */
     function tokenURI(uint256 tokenId)
         public
         view
