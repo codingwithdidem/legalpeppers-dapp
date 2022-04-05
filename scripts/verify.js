@@ -2,7 +2,8 @@ require("@nomiclabs/hardhat-etherscan");
 const hre = require("hardhat");
 const { calculateMerkleRoot } = require("../utils/whitelist");
 
-// This script is used to `deploy` the Smart Contract
+// This script is used to `verify` the Smart Contract deployed on the network.
+// Before running this script make sure to run `deploy` script first and wait for the transaction to be mined.
 async function main() {
   // Prepare constructor parameters for the contract
   // @param _payees The addresses that will receive the funds.
@@ -19,22 +20,11 @@ async function main() {
   const merkleRoot = calculateMerkleRoot();
   const maxBatchSize = 15;
 
-  const LegalPeppersClub = await hre.ethers.getContractFactory(
-    "LegalPeppersClub"
-  );
-
-  const lpc = await LegalPeppersClub.deploy(
-    payees,
-    shares,
-    merkleRoot,
-    maxBatchSize
-  );
-
-  await lpc.deployed();
-
-  // When you get the deployed contract address, you can use it to verify the contract.
-  // Before running the verify script, make sure to wait for the deploy transaction to be mined.
-  console.log("Legal Peppers Club deployed to:", lpc.address);
+  // Verify the deployed contract
+  await hre.run("verify:verify", {
+    address: "0xdd65B3ee85e004c6d26659876EE2c11D50b10185", // Deployed contract address
+    constructorArguments: [payees, shares, merkleRoot, maxBatchSize],
+  });
 }
 
 main().catch((error) => {

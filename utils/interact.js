@@ -1,7 +1,6 @@
 import Web3 from "web3";
-const { MerkleTree } = require("merkletreejs");
 const keccak256 = require("keccak256");
-import whitelist from "./whitelist";
+import { calculateMerkleTree } from "./whitelist";
 
 const web3 = new Web3(
   Web3.givenProvider ||
@@ -41,9 +40,7 @@ export const presaleMint = async (amount) => {
     };
   }
 
-  // Calculate merkle root from the whitelist array
-  const leafNodes = whitelist.map((addr) => keccak256(addr));
-  const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true });
+  const merkleTree = calculateMerkleTree();
   const root = merkleTree.getRoot();
 
   const leaf = keccak256(window.ethereum.selectedAddress);
