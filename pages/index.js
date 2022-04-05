@@ -9,6 +9,9 @@ import {
   getSaleStatus,
   publicMint,
   presaleMint,
+  getNftPrice,
+  getTotalSupply,
+  getMaxSupply,
 } from "../utils/interact";
 
 export default function Mint() {
@@ -19,15 +22,20 @@ export default function Mint() {
   const [onboard, setOnboard] = useState(null);
   const [saleStatus, setSaleStatus] = useState(null);
   const [maxSupply, setMaxSupply] = useState(0);
-  const [totalMinted, setTotalMinted] = useState(0);
+  const [totalSupply, setTotalSupply] = useState(0);
+
   const [maxMintAmount, setMaxMintAmount] = useState(10);
   const [mintAmount, setMintAmount] = useState(1);
   const [status, setStatus] = useState(null);
+  const [nftPrice, setNftPrice] = useState(0);
   const [isMinting, setIsMinting] = useState(false);
 
   useEffect(() => {
     const init = async () => {
       setSaleStatus(await getSaleStatus());
+      setNftPrice(await getNftPrice());
+      setTotalSupply(await getTotalSupply());
+      setMaxSupply(await getMaxSupply());
 
       // Event Listeners
       addSaleStatusListener();
@@ -207,7 +215,7 @@ export default function Mint() {
               <div className="relative w-full">
                 <div className="font-chalk z-10 absolute top-2 left-2 opacity-80 filter backdrop-blur-lg text-base px-4 py-2 bg-black border border-brand-purple rounded-md flex items-center justify-center text-white font-semibold">
                   <p>
-                    <span className="text-brand-pink">{totalMinted}</span> /{" "}
+                    <span className="text-brand-pink">{totalSupply}</span> /{" "}
                     {maxSupply}
                   </p>
                 </div>
@@ -275,9 +283,7 @@ export default function Mint() {
 
                     <div className="flex items-center space-x-3">
                       <p>
-                        {Number.parseFloat(config.price * mintAmount).toFixed(
-                          3
-                        )}{" "}
+                        {Number.parseFloat(nftPrice * mintAmount).toFixed(3)}{" "}
                         ETH
                       </p>{" "}
                       <span className="text-gray-400">+ GAS</span>

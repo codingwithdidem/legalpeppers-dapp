@@ -1,20 +1,39 @@
 import Web3 from "web3";
 const keccak256 = require("keccak256");
 import { calculateMerkleTree } from "./whitelist";
+import { config } from "../dapp.config";
 
 const web3 = new Web3(
   Web3.givenProvider ||
     `https://rinkeby.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`
 );
 
-const peppersAbi = require("../artifacts/contracts/LPC.sol/LPC.json").abi;
-const peppersAddres = "0xe23f887c5c1C7a2F7Ecb8945241479Bb55C39da1";
+const peppersAbi =
+  require("../artifacts/contracts/LegalPeppersClub.sol/LegalPeppersClub.json").abi;
+const peppersAddres = config.contractAddress;
 
 export const peppersContract = new web3.eth.Contract(peppersAbi, peppersAddres);
 
 export const getSaleStatus = async () => {
   const status = await peppersContract.methods.status().call();
   return status;
+};
+
+export const getNftPrice = async () => {
+  const price = await peppersContract.methods.PRICE().call();
+  const ethPrice = web3.utils.fromWei(price, "ether");
+
+  return ethPrice;
+};
+
+export const getTotalSupply = async () => {
+  const totalSupply = await peppersContract.methods.totalSupply().call();
+  return totalSupply;
+};
+
+export const getMaxSupply = async () => {
+  const maxSupply = await peppersContract.methods.maxSupply().call();
+  return maxSupply;
 };
 
 // Mint Functions
