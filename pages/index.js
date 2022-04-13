@@ -35,20 +35,6 @@ export default function Mint() {
   }, []);
 
   useEffect(() => {
-    const init = async () => {
-      setSaleStatus(await getSaleStatus());
-      setNftPrice(await getNftPrice());
-      setTotalSupply(await getTotalSupply());
-      setMaxSupply(await getMaxSupply());
-
-      // Event Listeners
-      addSaleStatusListener();
-    };
-
-    init();
-  }, []);
-
-  useEffect(() => {
     if (!connectedWallets.length) return;
 
     const connectedWalletsLabelArray = connectedWallets.map(
@@ -65,7 +51,7 @@ export default function Mint() {
       window.localStorage.getItem("connectedWallets")
     );
 
-    if (previouslyConnectedWallets?.length) {
+    if (previouslyConnectedWallets?.length && chains?.length) {
       async function setWalletFromLocalStorage() {
         await connect({
           autoSelect: {
@@ -76,9 +62,24 @@ export default function Mint() {
 
         addMintListener();
       }
+
       setWalletFromLocalStorage();
     }
-  }, [onboard, connect]);
+  }, [onboard, connect, chains]);
+
+  useEffect(() => {
+    const init = async () => {
+      setSaleStatus(await getSaleStatus());
+      setNftPrice(await getNftPrice());
+      setTotalSupply(await getTotalSupply());
+      setMaxSupply(await getMaxSupply());
+
+      // Event Listeners
+      addSaleStatusListener();
+    };
+
+    init();
+  }, []);
 
   const incrementMintAmount = () => {
     if (mintAmount < maxMintAmount) {
