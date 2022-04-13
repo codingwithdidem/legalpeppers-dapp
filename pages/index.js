@@ -39,7 +39,6 @@ export default function Mint() {
 
       // Event Listeners
       addSaleStatusListener();
-      addMintListener();
     };
 
     init();
@@ -69,8 +68,13 @@ export default function Mint() {
     if (previouslyConnectedWallets?.length) {
       async function setWalletFromLocalStorage() {
         await connect({
-          autoSelect: previouslyConnectedWallets[0],
+          autoSelect: {
+            label: previouslyConnectedWallets[0],
+            disableModals: true,
+          },
         });
+
+        addMintListener();
       }
       setWalletFromLocalStorage();
     }
@@ -199,7 +203,15 @@ export default function Mint() {
     <div className="min-h-screen h-full w-full overflow-hidden flex flex-col items-center justify-center">
       <div className="relative w-full md:w-[800px] h-full flex flex-col items-center justify-center">
         <div className="flex flex-col items-center justify-center h-full w-full px-2 py-2">
-          <div className=" shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
+          <div className=" relative shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
+            {wallet && (
+              <button
+                className="absolute right-4 bg-indigo-600 transition duration-300 ease-in-out font-chalk border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-4 py-2 rounded-md text-sm text-white tracking-wide uppercase"
+                onClick={() => disconnect(wallet)}
+              >
+                Disconnect
+              </button>
+            )}
             <h1 className="font-chalk uppercase font-bold text-3xl md:text-4xl bg-gradient-to-br  from-brand-white to-brand-green bg-clip-text text-transparent mt-3">
               {pickStatusTitle(saleStatus)}
             </h1>

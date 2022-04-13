@@ -1,4 +1,3 @@
-import Onboard from "@web3-onboard/core";
 import { init } from "@web3-onboard/react";
 import walletLinkModule from "@web3-onboard/walletlink";
 import walletConnectModule from "@web3-onboard/walletconnect";
@@ -20,16 +19,15 @@ const initOnboard = init({
       rpcUrl: RINKEBY_RPC_URL,
     },
   ],
-  // appMetadata: {
-  //   name: "Legal Peppers Club",
-  //   icon: "<SVG_ICON_STRING>",
-  //   logo: "<SVG_LOGO_STRING>",
-  //   description: "Legal Peppers Club minting website",
-  //   recommendedInjectedWallets: [
-  //     { name: "Coinbase", url: "https://wallet.coinbase.com/" },
-  //     { name: "MetaMask", url: "https://metamask.io" },
-  //   ],
-  // },
+  appMetadata: {
+    name: "LegalPeppers",
+    icon: "<svg><svg/>",
+    description: "Legal Peppers Club minting website",
+    recommendedInjectedWallets: [
+      { name: "Coinbase", url: "https://wallet.coinbase.com/" },
+      { name: "MetaMask", url: "https://metamask.io" },
+    ],
+  },
 });
 
 export { initOnboard };

@@ -10,7 +10,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
-      <Particles
+      {/* <Particles
         id="tsparticles"
         init={particlesInit}
         loaded={particlesLoaded}
@@ -124,7 +124,7 @@ function MyApp({ Component, pageProps }) {
           },
           retina_detect: true,
         }}
-      />
+      /> */}
 
       <Component {...pageProps} />
     </>
