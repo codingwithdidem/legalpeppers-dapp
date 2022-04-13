@@ -51,7 +51,7 @@ export default function Mint() {
       window.localStorage.getItem("connectedWallets")
     );
 
-    if (previouslyConnectedWallets?.length && chains?.length) {
+    if (previouslyConnectedWallets?.length && onboard) {
       async function setWalletFromLocalStorage() {
         await connect({
           autoSelect: {
@@ -65,7 +65,7 @@ export default function Mint() {
 
       setWalletFromLocalStorage();
     }
-  }, [onboard, connect, chains]);
+  }, [onboard, connect]);
 
   useEffect(() => {
     const init = async () => {
