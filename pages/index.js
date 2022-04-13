@@ -31,6 +31,10 @@ export default function Mint() {
   const [isMinting, setIsMinting] = useState(false);
 
   useEffect(() => {
+    setOnboard(initOnboard);
+  }, []);
+
+  useEffect(() => {
     const init = async () => {
       setSaleStatus(await getSaleStatus());
       setNftPrice(await getNftPrice());
@@ -42,10 +46,6 @@ export default function Mint() {
     };
 
     init();
-  }, []);
-
-  useEffect(() => {
-    setOnboard(initOnboard);
   }, []);
 
   useEffect(() => {
@@ -212,6 +212,7 @@ export default function Mint() {
                 Disconnect
               </button>
             )}
+
             <h1 className="font-chalk uppercase font-bold text-3xl md:text-4xl bg-gradient-to-br  from-brand-white to-brand-green bg-clip-text text-transparent mt-3">
               {pickStatusTitle(saleStatus)}
             </h1>
