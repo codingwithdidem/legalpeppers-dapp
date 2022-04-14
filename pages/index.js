@@ -47,11 +47,13 @@ export default function Mint() {
   }, [connectedWallets]);
 
   useEffect(() => {
+    if (!onboard) return;
+
     const previouslyConnectedWallets = JSON.parse(
       window.localStorage.getItem("connectedWallets")
     );
 
-    if (previouslyConnectedWallets?.length && onboard) {
+    if (previouslyConnectedWallets?.length) {
       async function setWalletFromLocalStorage() {
         await connect({
           autoSelect: {
@@ -207,8 +209,12 @@ export default function Mint() {
           <div className=" relative shadow-2xl z-10 md:max-w-3xl w-full bg-gray-900 bg-clip-padding bg-opacity-80 backdrop-filter filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
             {wallet && (
               <button
-                className="absolute right-4 bg-indigo-600 transition duration-300 ease-in-out font-chalk border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-4 py-2 rounded-md text-sm text-white tracking-wide uppercase"
-                onClick={() => disconnect(wallet)}
+                className="absolute right-4 bg-indigo-600 transition duration-200 ease-in-out font-chalk border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-4 py-2 rounded-md text-sm text-white tracking-wide uppercase"
+                onClick={() =>
+                  disconnect({
+                    label: wallet.label,
+                  })
+                }
               >
                 Disconnect
               </button>
@@ -312,7 +318,7 @@ export default function Mint() {
                       isSalePaused || isMinting
                         ? "bg-gray-900 cursor-not-allowed"
                         : "bg-brand-pink hover:bg-brand-pink-light"
-                    } w-full transition duration-300 ease-in-out font-chalk mt-12  border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase`}
+                    } w-full transition duration-200 ease-in-out font-chalk mt-12  border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-6 py-3 rounded-md text-2xl text-white mx-4 tracking-wide uppercase`}
                     disabled={isSalePaused || isMinting}
                     onClick={
                       pickStatusTitle(saleStatus) === "Pre Sale"
